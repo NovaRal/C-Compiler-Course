@@ -45,7 +45,7 @@ struct token
     // (Hello World)
     // ^ pointing to the bracket there
     const char* between_brackets;
-}
+};
 
 enum
 {
