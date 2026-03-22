@@ -4,12 +4,24 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-// TOKEN STRUCTS
 struct pos
 {
     int line;
     int col;
     const char* filename;
+};
+
+// ENUMS
+enum
+{
+    COMPILER_FILE_COMPILED_OK,
+    COMPILER_FAILED_WITH_ERRORS
+};
+
+enum
+{
+    LEXICAL_ANALYSIS_ALL_OK,
+    LEXICAL_ANALYSIS_INPUT_ERROR
 };
 
 enum
@@ -24,6 +36,7 @@ enum
     TOKEN_TYPE_NEWLINE
 };
 
+// TOKEN INTERFACE
 struct token
 {
     int type;
@@ -74,19 +87,13 @@ struct lex_process
      */
     int curr_expression_count;
     struct buffer* parantheses_buffer;
-    struct lexprocess_functions* function;
+    struct lex_process_functions* function;
 
     // Private Data which lexer does not understand but user using lexer does.
     void* private;
 };
 
 // COMPILE PROCESS INTERFACE
-enum
-{
-    COMPILER_FILE_COMPILED_OK,
-    COMPILER_FAILED_WITH_ERRORS
-};
-
 struct compile_process
 {
     // Flags to decide the compilation process
@@ -102,10 +109,17 @@ struct compile_process
     FILE* ofile;
 };
 
+// PROTOTYPES
 int compile_file(const char* filename, const char* out_filename, int flags);
 struct compile_process* compile_process_create(const char* filename, const char* filename_out, int flags);
 
 char compile_process_next_char(struct lex_process* lex_process);
 char compile_process_peek_char(struct lex_process* lex_process);
 void compile_process_push_char(struct lex_process* lex_process, char c);
+
+struct lex_process* lex_process_create(struct compile_process* compiler, struct lex_process_functions* functions, void* private);
+void lex_process_free(struct lex_process* process);
+void* lex_process_private(struct lex_process* process);
+struct vector* lex_process_tokens(struct lex_process* process);
+int lex(struct lex_process* process);
 #endif
