@@ -3,6 +3,10 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
+
+#define S_EQ(str, str2) \
+        (str && str2 && (strcmp(str, str2) == 0))
 
 struct pos
 {
@@ -23,6 +27,24 @@ struct pos
     case '8':           \
     case '9'
 
+#define OPERATOR_CASE_EXCLUDING_DIVISION \
+    case '+':                               \
+    case '-':                               \
+    case '*':                               \
+    case '>':                               \
+    case '<':                               \
+    case '^':                               \
+    case '%':                               \
+    case '!':                               \
+    case '=':                               \
+    case '~':                               \
+    case '|':                               \
+    case '&':                               \
+    case '(':                               \
+    case '[':                               \
+    case ',':                               \
+    case '.':                               \
+    case '?'                               
 // ENUMS
 enum
 {
@@ -138,4 +160,6 @@ int lex(struct lex_process* process);
 
 void compiler_error(struct compile_process* compiler, const char* msg, ...);
 void compiler_warning(struct compile_process* compiler, const char* msg, ...);
+
+bool token_is_keyword (struct token* token, const char* value);
 #endif
