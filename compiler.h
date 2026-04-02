@@ -44,7 +44,18 @@ struct pos
     case '[':                               \
     case ',':                               \
     case '.':                               \
-    case '?'                               
+    case '?'
+
+#define SYMBOL_CASE \
+    case '{':       \
+    case '}':       \
+    case ':':       \
+    case ';':       \
+    case '#':       \
+    case '\\':      \
+    case ')':       \
+    case ']'
+
 // ENUMS
 enum
 {
