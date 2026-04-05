@@ -3,6 +3,7 @@
 #include "helpers/buffer.h"
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 #define LEX_GETC_IF(buffer, c, exp)     \
     for (c = peekc(); exp; c = peekc()) \
@@ -70,7 +71,7 @@ static struct token *handle_whitespace()
 const char *read_number_str()
 {
     const char *num = NULL;
-    struct buffer *buffer = buffer_create();
+    struct buffer* buffer = buffer_create();
     char c = peekc();
     LEX_GETC_IF(buffer, c, (c >= '0' && c <= '9'));
 
@@ -281,6 +282,30 @@ static struct token* token_make_symbol()
     return token;
 }
 
+static struct token* token_make_identifier_or_keyword()
+{
+    struct buffer* buffer = buffer_create();
+    char c = peekc();
+    LEX_GETC_IF(buffer,c, (c >= 'a' && c<='z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c<='9') || c == '_');
+    
+    // null terminator
+    buffer_write(buffer, 0x00);
+
+    // Keyword check
+
+    return token_create(&(struct token){.type = TOKEN_TYPE_IDENTIFIER, .sval = buffer_ptr(buffer)});
+}
+
+struct token* read_special_token()
+{
+    char c = peekc();
+    if(isalpha(c) || c == '_')
+    {
+        return token_make_identifier_or_keyword();
+    }
+    return NULL;
+}
+
 struct token *read_next_token()
 {
     struct token *token = NULL;
@@ -313,7 +338,9 @@ struct token *read_next_token()
         break;
 
     default:
-        compiler_error(lex_process->compiler, "Unexpected Error\n");
+        token = read_special_token();
+        if(!token)
+            compiler_error(lex_process->compiler, "Unexpected Error\n");
     }
     return token;
 }
