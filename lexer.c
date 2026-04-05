@@ -334,6 +334,12 @@ static struct token* token_make_identifier_or_keyword()
     return token_create(&(struct token){.type = TOKEN_TYPE_IDENTIFIER, .sval = buffer_ptr(buffer)});
 }
 
+struct token* token_make_newline()
+{
+    nextc();
+    return token_create(&(struct token){.type = TOKEN_TYPE_NEWLINE});
+}
+
 struct token* read_special_token()
 {
     char c = peekc();
@@ -370,6 +376,10 @@ struct token *read_next_token()
     case ' ':
     case '\t':
         token = handle_whitespace();
+        break;
+    
+    case '\n':
+        token = token_make_newline();
         break;
     // End of lexical analysis of file
     case EOF:
