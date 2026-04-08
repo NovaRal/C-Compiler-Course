@@ -81,6 +81,14 @@ enum
     TOKEN_TYPE_NEWLINE
 };
 
+enum
+{
+    NUMBER_TYPE_NORMAL,
+    NUMBER_TYPE_LONG,
+    NUMBER_TYPE_FLOAT,
+    NUMBER_TYPE_DOUBLE
+};
+
 // TOKEN INTERFACE
 struct token
 {
@@ -97,6 +105,11 @@ struct token
         unsigned long long llnum;
         void* any;
     };
+
+    struct token_number
+    {
+        int type;
+    } num;
 
     // True if whitespace between token and prev token
     // ex:- + a for operator + means whitespace would be set for token "a"
@@ -152,6 +165,8 @@ struct compile_process
         const char* abs_path;
     } cfile;
 
+    // Vector of tokens from Lexical Analysis
+    struct vector* token_vec;
     FILE* ofile;
 };
 
