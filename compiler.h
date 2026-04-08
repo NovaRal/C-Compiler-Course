@@ -172,5 +172,14 @@ int lex(struct lex_process* process);
 void compiler_error(struct compile_process* compiler, const char* msg, ...);
 void compiler_warning(struct compile_process* compiler, const char* msg, ...);
 
+/**
+ * @brief Builds Token for the input string
+ * 
+ * @param compiler
+ * @param str
+ * @return struct lex_process*
+ */
+struct lex_process* tokens_build_for_string(struct compile_process* compiler, const char* str);
+
 bool token_is_keyword (struct token* token, const char* value);
 #endif
