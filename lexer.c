@@ -40,6 +40,13 @@ static void pushc(char c)
     lex_process->function->push_char(lex_process, c);
 }
 
+static char assert_next_char(char c)
+{
+    char next_c = nextc();
+    assert(c == next_c);
+    return next_c;
+}
+
 static struct pos lex_file_position()
 {
     return lex_process->pos;
@@ -71,7 +78,7 @@ static struct token *handle_whitespace()
 const char *read_number_str()
 {
     const char *num = NULL;
-    struct buffer* buffer = buffer_create();
+    struct buffer *buffer = buffer_create();
     char c = peekc();
     LEX_GETC_IF(buffer, c, (c >= '0' && c <= '9'));
 
@@ -178,13 +185,13 @@ bool op_valid(const char *op)
            S_EQ(op, "%");
 }
 
-void read_op_flush_back_keep_first(struct buffer* buffer)
+void read_op_flush_back_keep_first(struct buffer *buffer)
 {
-    const char* data = buffer_ptr(buffer);
+    const char *data = buffer_ptr(buffer);
     int len = buffer->len;
-    for(int i = len-1; i>= 1; i--)
+    for (int i = len - 1; i >= 1; i--)
     {
-        if(data[i] == 0x00)
+        if (data[i] == 0x00)
             continue;
         pushc(data[i]);
     }
@@ -213,13 +220,13 @@ const char *read_op()
     char *ptr = buffer_ptr(buffer);
     if (!single_operator)
     {
-        if(!op_valid(ptr))
+        if (!op_valid(ptr))
         {
             read_op_flush_back_keep_first(buffer);
             ptr[1] = 0x00;
         }
     }
-    else if(!op_valid(ptr))
+    else if (!op_valid(ptr))
     {
         compiler_error(lex_process->compiler, "The operator %s is not valid\n", ptr);
     }
@@ -250,39 +257,39 @@ bool lex_is_in_expression()
     return lex_process->curr_expression_count > 0;
 }
 
-bool is_keyword(const char* str)
+bool is_keyword(const char *str)
 {
     return S_EQ(str, "unsigned") ||
-            S_EQ(str, "signed") ||
-            S_EQ(str, "char") ||
-            S_EQ(str, "short") ||
-            S_EQ(str, "int") ||
-            S_EQ(str, "long") ||
-            S_EQ(str, "float") ||
-            S_EQ(str, "double") ||
-            S_EQ(str, "void") ||
-            S_EQ(str, "struct") ||
-            S_EQ(str, "union") ||
-            S_EQ(str, "static") ||
-            S_EQ(str, "__ignore_typecheck") ||
-            S_EQ(str, "return") ||
-            S_EQ(str, "include") ||
-            S_EQ(str, "sizeof") ||
-            S_EQ(str, "if") ||
-            S_EQ(str, "else") ||
-            S_EQ(str, "while") ||
-            S_EQ(str, "for") ||
-            S_EQ(str, "do") ||
-            S_EQ(str, "break") ||
-            S_EQ(str, "continue") ||
-            S_EQ(str, "switch") ||
-            S_EQ(str, "case") ||
-            S_EQ(str, "default") ||
-            S_EQ(str, "goto") ||
-            S_EQ(str, "typedef") ||
-            S_EQ(str, "const") ||
-            S_EQ(str, "extern") ||
-            S_EQ(str, "restrict");
+           S_EQ(str, "signed") ||
+           S_EQ(str, "char") ||
+           S_EQ(str, "short") ||
+           S_EQ(str, "int") ||
+           S_EQ(str, "long") ||
+           S_EQ(str, "float") ||
+           S_EQ(str, "double") ||
+           S_EQ(str, "void") ||
+           S_EQ(str, "struct") ||
+           S_EQ(str, "union") ||
+           S_EQ(str, "static") ||
+           S_EQ(str, "__ignore_typecheck") ||
+           S_EQ(str, "return") ||
+           S_EQ(str, "include") ||
+           S_EQ(str, "sizeof") ||
+           S_EQ(str, "if") ||
+           S_EQ(str, "else") ||
+           S_EQ(str, "while") ||
+           S_EQ(str, "for") ||
+           S_EQ(str, "do") ||
+           S_EQ(str, "break") ||
+           S_EQ(str, "continue") ||
+           S_EQ(str, "switch") ||
+           S_EQ(str, "case") ||
+           S_EQ(str, "default") ||
+           S_EQ(str, "goto") ||
+           S_EQ(str, "typedef") ||
+           S_EQ(str, "const") ||
+           S_EQ(str, "extern") ||
+           S_EQ(str, "restrict");
 }
 
 static struct token *token_make_operator_or_string()
@@ -290,34 +297,34 @@ static struct token *token_make_operator_or_string()
     char op = peekc();
     if (op == '<')
     {
-        struct token* last_token = lexer_last_token();
+        struct token *last_token = lexer_last_token();
         if (token_is_keyword(last_token, "include"))
         {
             return token_make_string('<', '>');
         }
     }
 
-    struct token* token = token_create(&(struct token){.type = TOKEN_TYPE_OPERATOR, .sval=read_op()});
-    if(op == '(')
+    struct token *token = token_create(&(struct token){.type = TOKEN_TYPE_OPERATOR, .sval = read_op()});
+    if (op == '(')
     {
         lex_new_expression();
     }
     return token;
 }
 
-struct token* token_make_one_line_comment()
+struct token *token_make_one_line_comment()
 {
-    struct buffer* buffer = buffer_create();
+    struct buffer *buffer = buffer_create();
     char c = 0;
     LEX_GETC_IF(buffer, c, c != '\n' && c != EOF);
     return token_create(&(struct token){.type = TOKEN_TYPE_COMMENT, .sval = buffer_ptr(buffer)});
 }
 
-struct token* token_make_multi_line_comment()
+struct token *token_make_multi_line_comment()
 {
-    struct buffer* buffer = buffer_create();
+    struct buffer *buffer = buffer_create();
     char c = 0;
-    while(1)
+    while (1)
     {
         LEX_GETC_IF(buffer, c, c != '*' && c != EOF);
         if (c == EOF)
@@ -328,7 +335,7 @@ struct token* token_make_multi_line_comment()
         {
             // Skip the *, find a */
             nextc();
-            if(peekc() == '/')
+            if (peekc() == '/')
             {
                 nextc();
                 break;
@@ -339,18 +346,18 @@ struct token* token_make_multi_line_comment()
     return token_create(&(struct token){.type = TOKEN_TYPE_COMMENT, .sval = buffer_ptr(buffer)});
 }
 
-struct token* handle_comment()
+struct token *handle_comment()
 {
     char c = peekc();
     if (c == '/')
     {
-        nextc ();
-        if(peekc() == '/')
+        nextc();
+        if (peekc() == '/')
         {
             nextc();
             return token_make_one_line_comment();
         }
-        else if(peekc() == '*')
+        else if (peekc() == '*')
         {
             nextc();
             return token_make_multi_line_comment();
@@ -361,7 +368,7 @@ struct token* handle_comment()
     return NULL;
 }
 
-static struct token* token_make_symbol()
+static struct token *token_make_symbol()
 {
     char c = nextc();
     if (c == ')')
@@ -369,16 +376,16 @@ static struct token* token_make_symbol()
         lex_finish_expression();
     }
 
-    struct token* token = token_create(&(struct token){.type = TOKEN_TYPE_SYMBOL, .cval = c});
+    struct token *token = token_create(&(struct token){.type = TOKEN_TYPE_SYMBOL, .cval = c});
     return token;
 }
 
-static struct token* token_make_identifier_or_keyword()
+static struct token *token_make_identifier_or_keyword()
 {
-    struct buffer* buffer = buffer_create();
+    struct buffer *buffer = buffer_create();
     char c = peekc();
-    LEX_GETC_IF(buffer,c, (c >= 'a' && c<='z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c<='9') || c == '_');
-    
+    LEX_GETC_IF(buffer, c, (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_');
+
     // null terminator
     buffer_write(buffer, 0x00);
 
@@ -390,20 +397,59 @@ static struct token* token_make_identifier_or_keyword()
     return token_create(&(struct token){.type = TOKEN_TYPE_IDENTIFIER, .sval = buffer_ptr(buffer)});
 }
 
-struct token* token_make_newline()
+struct token *token_make_newline()
 {
     nextc();
     return token_create(&(struct token){.type = TOKEN_TYPE_NEWLINE});
 }
 
-struct token* read_special_token()
+struct token *read_special_token()
 {
     char c = peekc();
-    if(isalpha(c) || c == '_')
+    if (isalpha(c) || c == '_')
     {
         return token_make_identifier_or_keyword();
     }
     return NULL;
+}
+
+char lex_get_escaped_char(char c)
+{
+    char co = 0;
+    switch (c)
+    {
+    case 'n':
+        co = '\n';
+        break;
+    case '\\':
+        co = '\\';
+        break;
+    case 't':
+        co = '\t';
+        break;
+    case '\'':
+        co = '\'';
+        break;
+    }
+    return co;
+}
+
+struct token *token_make_quote()
+{
+    assert_next_char('\'');
+    char c = nextc();
+    if (c == '\\')
+    {
+        c = nextc();
+        c = lex_get_escaped_char(c);
+    }
+
+    if (nextc() != '\'')
+    {
+        compiler_error(lex_process->compiler, "Quote has not been closed with ' character");
+    }
+
+    return token_create(&(struct token){.type = TOKEN_TYPE_NUMBER, .cval = c});
 }
 
 struct token *read_next_token()
@@ -412,7 +458,7 @@ struct token *read_next_token()
     char c = peekc();
 
     token = handle_comment();
-    if(token)
+    if (token)
     {
         return token;
     }
@@ -430,16 +476,20 @@ struct token *read_next_token()
     SYMBOL_CASE:
         token = token_make_symbol();
         break;
-    
+
     case '"':
         token = token_make_string('"', '"');
+        break;
+
+    case '\'':
+        token = token_make_quote();
         break;
     // Ignore whitespace
     case ' ':
     case '\t':
         token = handle_whitespace();
         break;
-    
+
     case '\n':
         token = token_make_newline();
         break;
@@ -449,7 +499,7 @@ struct token *read_next_token()
 
     default:
         token = read_special_token();
-        if(!token)
+        if (!token)
             compiler_error(lex_process->compiler, "Unexpected Error\n");
     }
     return token;
